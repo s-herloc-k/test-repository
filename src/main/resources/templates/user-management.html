@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>User Management</title>
+</head>
+<body>
+<h1>User Management</h1>
+
+<form id="user-form">
+    <div>
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name">
+    </div>
+    <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email">
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password">
+    </div>
+    <button type="submit">Add User</button>
+</form>
+
+<table id="user-table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Загрузка пользователей при загрузке страницы
+        loadUsers();
+
+        // Обработчик события submit формы добавления пользователя
+        $("#user-form").submit(function (event) {
+            event.preventDefault();
+            var name = $("#name").val();
+            var email = $("#email").val();
+            var password = $("#password").val();
+            addUser(name, email, password);
+        });
+    });
+
+    // Загрузка пользователей
+    function loadUsers() {
+        $.ajax({
+            url: "/users",
+            method: "GET"
+        }).done(function (data) {
+            var table = $("#user-table tbody");
+            table.empty();
+            $.each(data, function (index, user) {
+                var row = "<tr><td>" + user.name + "</td><td>" + user.email + "</td><td><button onclick='deleteUser(" + user.id + ")'>Delete</button></td></tr>";
+                table.append(row);
+            });
+        });
+    }
+
+    // Добавление пользователя
+    function addUser(name, email, password) {
+        var user = {
+            name: name,
+            email: email,
+            password: password
+        };
+        $.ajax({
+            url: "/users",
+            method: "POST",
+            data: JSON.stringify(user),
+            contentType: "application/json"
+        }).done(function () {
+            $("#user-form")[0].reset();
+            loadUsers();
+        });
+    }
+
+    // Удаление пользователя
+    function deleteUser(id) {
+        $.ajax({
+            url: "/users/" + id,
+            method: "DELETE"
+        }).done(function () {
+            loadUsers();
+        });
+    }
+</script>
+</body>
+</html>
